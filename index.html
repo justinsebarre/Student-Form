@@ -316,6 +316,7 @@
         type="text"
         id="gcontact"
         placeholder="09XXXXXXXXX"
+        maxlength="11"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
       />
       <div class="error-message"></div>
@@ -373,6 +374,7 @@
         type="text"
         id="phone"
         placeholder="09XXXXXXXXX"
+        maxlength="11"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
       />
       <div class="error-message"></div>
@@ -463,10 +465,6 @@
     } else ageField.value = "";
   }
 
-  /* ---------------------------
-      INPUT VALIDATION FIXED 🔧
-     --------------------------- */
-
   function setError(input, message) {
     input.classList.add("error");
     input.classList.remove("success");
@@ -479,19 +477,20 @@
     input.parentElement.querySelector(".error-message").textContent = "";
   }
 
-  // Block letters in contact + student ID
-  function numericOnly(input, allowDash = false) {
+  function numericOnly(input, allowDash = false, maxLength = null) {
     let pattern = allowDash ? /[^0-9-]/g : /[^0-9]/g;
 
     if (pattern.test(input.value)) {
       input.value = input.value.replace(pattern, "");
       setError(input, "Letters are not allowed.");
+    } else if (maxLength && input.value.length > maxLength) {
+      input.value = input.value.slice(0, maxLength);
+      setError(input, `Maximum ${maxLength} digits allowed.`);
     } else {
       setSuccess(input);
     }
   }
 
-  // Validate normal fields
   function validateInput(input) {
     const value = input.value.trim();
     const errorDiv = input.parentElement.querySelector(".error-message");
@@ -501,42 +500,34 @@
       return false;
     }
 
+    // Special validation for phone numbers
+    if ((input.id === "phone" || input.id === "gcontact") && value.length !== 11) {
+      setError(input, "Contact number must be exactly 11 digits.");
+      return false;
+    }
+
     setSuccess(input);
     return true;
   }
 
-  // Add listeners after page load
   window.onload = function () {
     addValidationListeners();
 
-    // BLOCK LETTERS IN CONTACT + STUDENT ID
     document.getElementById("phone").addEventListener("input", function () {
-      numericOnly(this, false);
+      numericOnly(this, false, 11);
     });
-
     document.getElementById("gcontact").addEventListener("input", function () {
-      numericOnly(this, false);
+      numericOnly(this, false, 11);
     });
-
     document.getElementById("student-id").addEventListener("input", function () {
       numericOnly(this, true);
     });
   };
 
-  // Add general validation for other fields
   function addValidationListeners() {
     const ids = [
-      "lname",
-      "fname",
-      "mname",
-      "dob",
-      "gender",
-      "address",
-      "gname",
-      "relationship",
-      "gaddress",
-      "course",
-      "email"
+      "lname", "fname", "mname", "dob", "gender", "address",
+      "gname", "relationship", "gaddress", "course", "email", "phone", "gcontact"
     ];
 
     ids.forEach((id) => {
@@ -545,26 +536,11 @@
     });
   }
 
-  /* ---------------------------
-        SUBMIT FUNCTION
-     --------------------------- */
-
   function submitStudent() {
     const ids = [
-      "lname",
-      "fname",
-      "mname",
-      "dob",
-      "gender",
-      "address",
-      "gname",
-      "relationship",
-      "gcontact",
-      "gaddress",
-      "student-id",
-      "course",
-      "email",
-      "phone"
+      "lname", "fname", "mname", "dob", "gender", "address",
+      "gname", "relationship", "gcontact", "gaddress",
+      "student-id", "course", "email", "phone"
     ];
 
     let isValid = true;
@@ -579,7 +555,6 @@
       return;
     }
 
-    // Add Student Data
     const student = {
       id: document.getElementById("student-id").value.trim(),
       lname: document.getElementById("lname").value.trim(),
@@ -644,4 +619,3 @@
 </script>
 </body>
 </html>
-
